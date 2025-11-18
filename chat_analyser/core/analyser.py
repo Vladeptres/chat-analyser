@@ -17,12 +17,11 @@ def load_context(context_type: str) -> str:
         return markdown.markdown(f.read())
 
 
-def format_query(
-    context_type: str, messages: list[dict[str, str]], users: list[str]
-) -> str:
+# TODO: Use a json format with {user: message} instead of two lists.
+def format_query(messages: list[dict[str, str]], users: list[str]) -> str:
     messages = "\n".join([json.dumps(message) for message in messages])
     users = "\n".join(users)
-    return load_context(context_type) + "\n" + messages + "\n" + users
+    return messages + "\n" + users
 
 
 def analyse_chat(
@@ -31,12 +30,19 @@ def analyse_chat(
     users: list[str],
     model: str = cf.MISTRAL_MODEL,
 ) -> ConversationAnalysisResponse:
+    
+    system_prompt: str = load_context(context_type)
+    user_prompt: str = format_query(context_type, messages, users)
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+
     chat_response = (
         client.chat.complete(
             model=model,
-            messages=[
-                {"role": "user", "content": format_query(context_type, messages, users)}
-            ],
+            messages=messages,
             response_format={
                 "type": "json_object",
                 "json_schema": ConversationAnalysisResponse.model_json_schema(),

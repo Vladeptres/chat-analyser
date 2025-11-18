@@ -1,0 +1,26 @@
+[project]
+name = "chat-analyser"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[standard]>=0.121.2",
+    "markdown>=3.10",
+    "mistralai>=1.9.11",
+    "pydantic>=2.12.4",
+]
+
+[tool.setuptools.packages.find]
+where = ["./"]
+include = ["chat_analyser*"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.1",
+    "ruff>=0.14.5",
+]
+
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"

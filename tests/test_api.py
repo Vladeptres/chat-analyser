@@ -1,14 +1,10 @@
 from fastapi.testclient import TestClient
 import unittest
-from unittest.mock import patch, MagicMock
-
+from unittest.mock import patch
 from chat_analyser.api.main import app
 from chat_analyser.api.models import (
-    ConversationAnalysisRequest,
     ConversationAnalysisResponse,
     UserFeedback,
-    PostContextRequest,
-    PostContextResponse,
 )
 
 
@@ -18,11 +14,11 @@ class TestApi(unittest.TestCase):
         self.sample_messages = [
             {"user": "Alice", "message": "Hey everyone!"},
             {"user": "Bob", "message": "Hello Alice, how are you?"},
-            {"user": "Alice", "message": "I'm doing great, thanks!"}
+            {"user": "Alice", "message": "I'm doing great, thanks!"},
         ]
         self.sample_users = ["Alice", "Bob"]
 
-    @patch('chat_analyser.core.analyse_chat')
+    @patch("chat_analyser.core.analyse_chat")
     def test_analyse_chat_success(self, mock_analyse_chat):
         """Test successful chat analysis"""
         # Mock the response
@@ -30,8 +26,8 @@ class TestApi(unittest.TestCase):
             summary="Test conversation summary",
             users_feedback={
                 "Alice": UserFeedback(summary="Alice was friendly", emoji="😊"),
-                "Bob": UserFeedback(summary="Bob was polite", emoji="👋")
-            }
+                "Bob": UserFeedback(summary="Bob was polite", emoji="👋"),
+            },
         )
         mock_analyse_chat.return_value = mock_response
 
@@ -40,7 +36,7 @@ class TestApi(unittest.TestCase):
             "context_type": "party",
             "messages": self.sample_messages,
             "users": self.sample_users,
-            "max_attempts": 3
+            "max_attempts": 3,
         }
         response = self.client.post("/chat/", json=request_data)
 
@@ -57,7 +53,7 @@ class TestApi(unittest.TestCase):
             "party", self.sample_messages, self.sample_users
         )
 
-    @patch('chat_analyser.core.analyse_chat')
+    @patch("chat_analyser.core.analyse_chat")
     def test_analyse_chat_with_retries(self, mock_analyse_chat):
         """Test chat analysis with retries on ValueError"""
         # Mock to raise ValueError on first calls, then succeed
@@ -68,15 +64,15 @@ class TestApi(unittest.TestCase):
                 summary="Success after retries",
                 users_feedback={
                     "Alice": UserFeedback(summary="Alice summary", emoji="😊")
-                }
-            )
+                },
+            ),
         ]
 
         request_data = {
             "context_type": "invalid_context",
             "messages": self.sample_messages,
             "users": self.sample_users,
-            "max_attempts": 3
+            "max_attempts": 3,
         }
         response = self.client.post("/chat/", json=request_data)
 
@@ -85,7 +81,7 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response_data["summary"], "Success after retries")
         self.assertEqual(mock_analyse_chat.call_count, 3)
 
-    @patch('chat_analyser.core.analyse_chat')
+    @patch("chat_analyser.core.analyse_chat")
     def test_analyse_chat_max_attempts_exceeded(self, mock_analyse_chat):
         """Test chat analysis when max attempts are exceeded"""
         # Mock to always raise ValueError
@@ -95,7 +91,7 @@ class TestApi(unittest.TestCase):
             "context_type": "invalid_context",
             "messages": self.sample_messages,
             "users": self.sample_users,
-            "max_attempts": 2
+            "max_attempts": 2,
         }
         response = self.client.post("/chat/", json=request_data)
 
@@ -111,19 +107,19 @@ class TestApi(unittest.TestCase):
         # Missing required fields
         request_data = {
             "messages": self.sample_messages,
-            "users": self.sample_users
+            "users": self.sample_users,
             # Missing context_type
         }
         response = self.client.post("/chat/", json=request_data)
         self.assertEqual(response.status_code, 422)  # Validation error
 
-    @patch('chat_analyser.core.write_context')
-    @patch('chat_analyser.config.AVAILABLE_CONTEXTS', ['party', 'work'])
+    @patch("chat_analyser.core.write_context")
+    @patch("chat_analyser.config.AVAILABLE_CONTEXTS", ["party", "work"])
     def test_post_context_success(self, mock_write_context):
         """Test successful context creation"""
         request_data = {
             "context_type": "meeting",
-            "context": "# Meeting Context\nThis is a meeting analysis context."
+            "context": "# Meeting Context\nThis is a meeting analysis context.",
         }
         response = self.client.post("/context/", json=request_data)
 
@@ -147,41 +143,70 @@ class TestApi(unittest.TestCase):
         response = self.client.post("/context/", json=request_data)
         self.assertEqual(response.status_code, 422)  # Validation error
 
-    def test_analyse_chat_empty_messages(self):
+    @patch("chat_analyser.core.analyse_chat")
+    def test_analyse_chat_empty_messages(self, mock_analyse_chat):
         """Test chat analysis with empty messages"""
+        mock_response = ConversationAnalysisResponse(
+            summary="Test conversation summary",
+            users_feedback={
+                "Alice": UserFeedback(summary="Alice was friendly", emoji="😊"),
+                "Bob": UserFeedback(summary="Bob was polite", emoji="👋"),
+            },
+        )
+        mock_analyse_chat.return_value = mock_response
         request_data = {
             "context_type": "party",
             "messages": [],
             "users": self.sample_users,
-            "max_attempts": 3
+            "max_attempts": 3,
         }
         response = self.client.post("/chat/", json=request_data)
         # Should still process the request
         self.assertEqual(response.status_code, 200)
 
-    def test_analyse_chat_empty_users(self):
+    @patch("chat_analyser.core.analyse_chat")
+    def test_analyse_chat_empty_users(self, mock_analyse_chat):
         """Test chat analysis with empty users list"""
+        mock_response = ConversationAnalysisResponse(
+            summary="Test conversation summary",
+            users_feedback={
+                "Alice": UserFeedback(summary="Alice was friendly", emoji="😊"),
+                "Bob": UserFeedback(summary="Bob was polite", emoji="👋"),
+            },
+        )
+        mock_analyse_chat.return_value = mock_response
         request_data = {
             "context_type": "party",
             "messages": self.sample_messages,
             "users": [],
-            "max_attempts": 3
+            "max_attempts": 3,
         }
         response = self.client.post("/chat/", json=request_data)
         # Should still process the request
         self.assertEqual(response.status_code, 200)
 
-    def test_analyse_chat_default_max_attempts(self):
+    @patch("chat_analyser.core.analyse_chat")
+    def test_analyse_chat_default_max_attempts(self, mock_analyse_chat):
         """Test that max_attempts defaults to 3 when not provided"""
+        mock_response = ConversationAnalysisResponse(
+            summary="Test conversation summary",
+            users_feedback={
+                "Alice": UserFeedback(summary="Alice was friendly", emoji="😊"),
+                "Bob": UserFeedback(summary="Bob was polite", emoji="👋"),
+            },
+        )
+        mock_analyse_chat.return_value = mock_response
         request_data = {
             "context_type": "party",
             "messages": self.sample_messages,
-            "users": self.sample_users
+            "users": self.sample_users,
             # max_attempts not provided, should default to 3
         }
         response = self.client.post("/chat/", json=request_data)
         # Should process without error
-        self.assertIn(response.status_code, [200, 422])  # 200 if mocked properly, 422 if validation fails
+        self.assertIn(
+            response.status_code, [200, 422]
+        )  # 200 if mocked properly, 422 if validation fails
 
 
 if __name__ == "__main__":

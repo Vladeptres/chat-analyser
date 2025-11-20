@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from chat_analyser import config as cf
 
+
 class ConversationAnalysisRequest(BaseModel):
     context_type: str
     model: str = cf.MISTRAL_MODEL

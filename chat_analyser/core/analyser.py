@@ -3,14 +3,13 @@ from os.path import join as pjoin
 import markdown
 from chat_analyser.api.models import ConversationAnalysisResponse
 from chat_analyser import config as cf
-from typing import Literal
 
 
-def load_system_prompt(context_type: Literal["party", "work"]) -> str:
+def load_system_prompt(context_type: str) -> str:
     """Loads the context to be used as a system prompt.
 
     Args:
-        context_type (Literal["party", "work"]): The name of the context to load.
+        context_type (str): The name of the context to load.
 
     Raises:
         ValueError: If the requested context type does not exist.

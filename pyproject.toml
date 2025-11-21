@@ -9,6 +9,7 @@ dependencies = [
     "markdown>=3.10",
     "mistralai>=1.9.11",
     "pydantic>=2.12.4",
+    "python-dotenv",
 ]
 
 [tool.setuptools.packages.find]

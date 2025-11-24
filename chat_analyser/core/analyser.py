@@ -1,6 +1,5 @@
 from mistralai import Mistral
 from os.path import join as pjoin
-import markdown
 from chat_analyser.api.models import ConversationAnalysisResponse
 from chat_analyser import config as cf
 
@@ -22,11 +21,12 @@ def load_system_prompt(context_type: str) -> str:
             f"Context type {context_type} not among existing context. Please choose one among : {cf.AVAILABLE_CONTEXTS}"
         )
     with open(pjoin(cf.CONTEXTS_DIR, context_type + ".md"), "r") as f:
-        return markdown.markdown(f.read())
+        return f.read()
 
 
 def format_user_prompt(
-    users: list[str], conversations: dict[int, dict[str, str]]
+    users: list[str],
+    conversations: dict[int, dict[str, str]],
 ) -> str:
     """Format the user prompt given the list of users, and the conversations dictionary.
 
@@ -50,7 +50,7 @@ def format_user_prompt(
 def analyse_chat(
     context_type: str,
     users: list[str],
-    conversations: list[dict[str, str]],
+    conversations: dict[int, dict[str, str]],
     model: str = cf.MISTRAL_MODEL,
 ) -> ConversationAnalysisResponse:
     """Call a Mistral LLM to analyse the conversations of users given a context type.
@@ -67,7 +67,7 @@ def analyse_chat(
     Args:
         context_type (str): The name of the context to load.
         users (list[str]): The list of users registered in the chat.
-        conversations (list[dict[str, str]]): The conversations dictionary.
+        conversations (dict[int, dict[str, str]]): The conversations dictionary.
         model (str, optional): The name of the Mistral model to call. Defaults to cf.MISTRAL_MODEL.
 
     Returns:

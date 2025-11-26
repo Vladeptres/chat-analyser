@@ -52,6 +52,7 @@ dependencies = [
     { name = "markdown" },
     { name = "mistralai" },
     { name = "pydantic" },
+    { name = "python-dotenv" },
 ]
 
 [package.dev-dependencies]
@@ -66,6 +67,7 @@ requires-dist = [
     { name = "markdown", specifier = ">=3.10" },
     { name = "mistralai", specifier = ">=1.9.11" },
     { name = "pydantic", specifier = ">=2.12.4" },
+    { name = "python-dotenv" },
 ]
 
 [package.metadata.requires-dev]

@@ -79,10 +79,10 @@ class TestAnalyser(unittest.TestCase):
         # Test data
         context_type = "test_context"
         users = ["Alice", "Bob"]
-        conversations = {
-            0: {"user": "Alice", "content": "Hello"},
-            1: {"user": "Bob", "content": "Hi"},
-        }
+        conversations = [
+            {"user": "Alice", "content": "Hello"},
+            {"user": "Bob", "content": "Hi"},
+        ]
 
         # Call function
         result = analyse_chat(context_type, users, conversations)

@@ -16,6 +16,9 @@ dependencies = [
 where = ["./"]
 include = ["chat_analyser*"]
 
+[tool.setuptools.package-data]
+"chat_analyser.core.contexts" = ["*.md"]
+
 [dependency-groups]
 dev = [
     "pytest>=9.0.1",
